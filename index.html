@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BEACHfFSW Analytics</title>
+  <link rel="stylesheet" href="styliy.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/odometer.js/0.4.8/themes/odometer-theme-default.min.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">↗</span><span>BEACHfFSW</span></div>
+      <p class="eyebrow">Competition</p>
+      <button class="nav-button active" id="leaderboard-nav" type="button"><span>▦</span>Live leaderboard</button>
+      <button class="nav-button" id="settings-nav" type="button"><span>⚙</span>Settings</button>
+      <div class="sidebar-footer"><span class="status-dot"></span><span>All fine!</span></div>
+    </aside>
+    <main>
+      <header class="topbar"><div class="crumbs"> <span>/</span> <strong id="crumb">Live leaderboard</strong></div><div class="top-actions"><span class="sync-label"><span class="live-pulse"></span>Syncs every 20s</span><input class="search" id="search" type="search" placeholder="Find a channel..." aria-label="Find a channel"><div class="avatar">AM</div></div></header>
+      <div class="content">
+        <section class="leaderboard" id="leaderboard-view">
+          <div class="intro"><div><p class="kicker"><span class="live-pulse"></span>Live · updating</p><h1>Who will be the most subscribed?</h1><p></p></div><button class="refresh-button" id="refresh-button" type="button">↻ Update standings</button></div>
+          <div class="summary-row"><div><strong id="api-count">0</strong><span> channels existed</span></div><div class="live-label"><span class="live-pulse"></span> Live standings</div></div>
+          <div class="leaderboard-head"><span>Rank</span><span>Channel</span><span>Subscribers</span><span>Views</span><span>Videos</span><span>Status</span></div>
+          <div class="leaderboard-list" id="leaderboard-list" aria-live="polite"></div>
+        </section>
+        <section class="details" id="details" aria-live="polite"></section>
+        <section class="settings-panel" id="settings-panel" aria-labelledby="settings-title">
+          <p class="kicker">Arena preferences</p>
+          <h1 id="settings-title">Settings</h1>
+          <p class="settings-intro">Choose how the live standings appear on your screen.</p>
+          <div class="settings-option"><div><strong>Abbreviate views</strong><p>Show large view totals as 1.2K, 3.4M, and similar compact values.</p></div><label class="switch"><input id="abbreviate-views" type="checkbox" aria-label="Abbreviate views"><span></span></label></div>
+          <div class="settings-option"><div><strong>Dark mode</strong><p>Use a darker color scheme for the arena.</p></div><label class="switch"><input id="theme-toggle" type="checkbox" aria-label="Dark mode"><span></span></label></div>
+          <div class="settings-option"><div><strong>Blur banner</strong><p>Apply a subtle 3px blur to the profile banner background.</p></div><label class="switch"><input id="banner-blur" type="checkbox" aria-label="Blur banner"><span></span></label></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/odometer.js/0.4.8/odometer.min.js"></script>
+  <script src="scripty.js"></script>
+</body>
+</html>
