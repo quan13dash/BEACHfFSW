@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,GRAD,ROND@6..144,-10..0,25..151,1..1000,0..100,0..100&family=Red+Hat+Mono:ital,wght@0,300..700;1,300..700&display=swap');
+:root {
+  --background: #181818;
+  --card: #242424;
+  --border: #139b5b;
+  --text: #f4f4f4;
+  --muted: #aeb5b1;
+  --accent: #ffcf38;
+}
+
+* { box-sizing: border-box; }
+html, body { width: 1366px; height: 768px; margin: 0; overflow: hidden; }
+body { background: var(--background); color: var(--text); font-family: "Google Sans Flex", sans-serif; }
+.overlay { width: 1366px; height: 768px; padding: 3px 5px; }
+.overlay-header { height: 42px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; }
+.overlay-header h1 { margin: 0; color: var(--text); font-size: 24px; font-weight: 650; letter-spacing: -.03em; }
+#utc-clock { color: var(--muted); font: 500 17px/1 "Google Sans Flex", sans-serif; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.leaderboard { display: grid; grid-auto-flow: column; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(10, 1fr); gap: 3px 5px; width: 100%; height: calc(100% - 42px); }
+.entry { position: relative; display: grid; grid-template-columns: 42px 52px minmax(0, 1fr); align-items: center; min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 5px; background: var(--card); isolation: isolate; }
+.entry::before { content: ""; position: absolute; z-index: -2; inset: 0; background-image: var(--banner-image); background-position: center; background-size: cover; opacity: .42; }
+.entry::after { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, rgba(24,24,24,.98) 0%, rgba(24,24,24,.86) 42%, rgba(24,24,24,.68) 100%); }
+.entry.medal-gold { border-color: transparent; background: linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, #8c6415, #f4ca59 48%, #fff0a3) border-box; }
+.entry.medal-silver { border-color: transparent; background: linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, #657078, #dce3e6 48%, #89969d) border-box; }
+.entry.medal-bronze { border-color: transparent; background: linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, #75452d, #c98a5c 48%, #edbd91) border-box; }
+.rank-wrap { position: relative; width: 42px; height: 48px; display: grid; place-items: center; }
+.rank { position: relative; z-index: 1; color: var(--rank-color, #858d89); font: 500 18px/1 "Google Sans Flex", sans-serif; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.fire-visual { position: absolute; inset: 0; z-index: 0; display: grid; place-items: center; overflow: hidden; border-radius: 4px; background: rgba(0,0,0,.2); opacity: .9; }
+.fire-visual img { width: 100%; height: 100%; object-fit: cover; }
+.channel-visual { width: 56px; height: 56px; display: grid; place-items: center; overflow: hidden; border-radius: 4px; background: rgba(19,155,91,.35); color: var(--text); font-size: 22px; }
+.channel-visual img { width: 100%; height: 100%; object-fit: cover; }
+.channel-info { min-width: 0; padding: 6px 4px 4px 10px; }
+.channel-info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.channel-info strong { color: var(--text); font-size: 15px; line-height: 1.05; }
+.count { display: block; margin-top: 5px; color: var(--text); font: 600 27px/1 "Red Hat Mono", monospace; font-variant-numeric: tabular-nums; }
+.entry.is-loading .count { color: var(--muted); }
+@media (max-width: 1366px), (max-height: 768px) {
+  html, body { transform-origin: top left; }
+}
+/* LEAVE UNTHOUCHED */
+.overlay-header h1 {
+    font-variation-settings: "wdth" 125;
+}
+.odometer {
+    font-family: "Red Hat Mono", monospace !important;
+    font-weight: 700 !important;
+}
+.fire-visual {
+    margin-left: 0.25em;
+    margin-right: 0.25em;
+    margin-top: -0.25em;
+    margin-bottom: -0.25em;
+}
+.channel-info strong {
+    font-variation-settings: "wdth" 75, "wght" 500, "slnt" -2;
+}

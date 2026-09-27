@@ -1,4 +1,8 @@
-const API_URL = "https://beachffswapi.vercel.app/api";
+const DEFAULT_API_URL = "https://beachffswapi.vercel.app/api";
+const LCEDIT_API_URL = "https://beachffswlcedit.quan13dash.workers.dev/api/";
+const requestedServer = new URLSearchParams(window.location.search).get("server");
+const API_URL = (requestedServer === "lcedit" ? LCEDIT_API_URL : DEFAULT_API_URL).replace(/\/+$/, "");
+const REFRESH_INTERVAL = 15000;
 const fallbackApis = [
 	{ id:"payments", name:"Payments", icon:"$", description:"Channel contender", count:2400000, roundcount:2400000, views:0, videos:0 },
 	{ id:"identity", name:"Identity", icon:"◎", description:"Channel contender", count:891000, roundcount:891000, views:0, videos:0 }
@@ -10,8 +14,24 @@ let APIs = [];
 let loading = false;
 let activeProfileId = null;
 const displayedCounts = new Map();
-let abbreviateViews = localStorage.getItem("abbreviate-views") === "true";
-let bannerBlurEnabled = localStorage.getItem("banner-blur") === "true";
+const safeLocalStorageGet = (key, fallback = null) => {
+	try {
+		const value = localStorage.getItem(key);
+		return value ?? fallback;
+	} catch {
+		return fallback;
+	}
+};
+const safeLocalStorageSet = (key, value) => {
+	try {
+		localStorage.setItem(key, value);
+	} catch {
+		// Ignore storage errors in restricted browser contexts.
+	}
+};
+let abbreviateViews = safeLocalStorageGet("abbreviate-views", "false") === "true";
+let bannerBlurEnabled = safeLocalStorageGet("banner-blur", "false") === "true";
+let replaceCrownEnabled = safeLocalStorageGet("replace-crown", "false") === "true";
 
 function getCountKey(prefix, id) { return `${prefix}:${id}`; }
 function formatNumber(value) { return new Intl.NumberFormat("en", { notation:"compact", maximumFractionDigits:1 }).format(value); }
@@ -43,10 +63,13 @@ function normalizeApi(item, index) {
 	return { id:item.id || item.slug || `channel-${index}`, name:item.name || item.title || `Channel ${index + 1}`, username:item.username || "", icon:item.icon || "↗", description:item.description || "Channel", country:item.country || "", contenttype:item.contenttype || "", count:Number(item.count ?? item.requests ?? 0), roundcount:Number(item.roundcount ?? item.count ?? 0), views:Number(item.views ?? 0), videos:Number(item.videos ?? 0), image, banner };
 }
 function renderLeaderboard(items) {
-	const query = document.querySelector("#search").value.toLowerCase();
+	const searchInput = document.querySelector("#search");
+	const query = (searchInput ? searchInput.value : "").toLowerCase();
 	const filtered = items.filter(api => `${api.name} ${api.description}`.toLowerCase().includes(query)).sort((a, b) => b.count - a.count);
-	document.querySelector("#api-count").textContent = filtered.length;
-	list.innerHTML = filtered.length ? filtered.map((api, index) => `<article class="leaderboard-row ${index < 3 ? `podium-${index + 1}` : ""}" data-api="${api.id}" tabindex="0"><span class="rank ${index < 3 ? `podium-rank-${index + 1}` : ""}">${index === 0 ? "♛" : `#${index + 1}`}</span><div class="api-name"><div class="api-icon">${api.image ? `<img src="${api.image}" alt="">` : api.icon}</div><div class="api-copy"><strong>${api.name}</strong><small>${api.username ? `@${api.username}` : index === 0 ? "Current leader" : index < 3 ? "On the podium" : "In the running"}</small></div></div><div class="row-value"><strong><span class="odometer" data-value="${api.roundcount}" data-count-key="${getCountKey("leaderboard", api.id)}">0</span></strong></div><div class="row-value"><strong>${formatViews(api.views)}</strong></div><div class="row-value"><strong>${formatNumber(api.videos)}</strong></div><span class="status">Competing</span></article>`).join("") : "<div class=\"empty-state\">No channels match your search.</div>";
+	const apiCount = document.querySelector("#api-count");
+	if (apiCount) apiCount.textContent = filtered.length;
+	if (!list) return;
+	list.innerHTML = filtered.length ? filtered.map((api, index) => `<article class="leaderboard-row ${index < 3 ? `podium-${index + 1}` : ""}" data-api="${api.id}" tabindex="0"><span class="rank ${index < 3 ? `podium-rank-${index + 1}` : ""}">${index === 0 && !replaceCrownEnabled ? "♛" : `#${index + 1}`}</span><div class="api-name"><div class="api-icon">${api.image ? `<img src="${api.image}" alt="">` : api.icon}</div><div class="api-copy"><strong>${api.name}</strong><small>${api.username ? `@${api.username}` : index === 0 ? "Current leader" : index < 3 ? "On the podium" : "In the running"}</small></div></div><div class="row-value"><strong><span class="odometer" data-value="${api.roundcount}" data-count-key="${getCountKey("leaderboard", api.id)}">0</span></strong></div><div class="row-value"><strong>${formatViews(api.views)}</strong></div><div class="row-value"><strong>${formatNumber(api.videos)}</strong></div><span class="status">Competing</span></article>`).join("") : "<div class=\"empty-state\">No channels match your search.</div>";
 	animateCounts();
 	document.querySelectorAll(".leaderboard-row").forEach(row => {
 		row.addEventListener("click", () => showDetails(row.dataset.api));
@@ -84,11 +107,15 @@ document.querySelector("#refresh-button").addEventListener("click", loadApis);
 const themeToggle = document.querySelector("#theme-toggle");
 function setTheme(theme) {
 	document.body.classList.toggle("dark-mode", theme === "dark");
-	themeToggle.checked = theme === "dark";
-	localStorage.setItem("arena-theme", theme);
+	if (themeToggle) {
+		themeToggle.checked = theme === "dark";
+	}
+	safeLocalStorageSet("arena-theme", theme);
 }
-themeToggle.addEventListener("change", () => setTheme(themeToggle.checked ? "dark" : "light"));
-setTheme(localStorage.getItem("arena-theme") || "light");
+if (themeToggle) {
+	themeToggle.addEventListener("change", () => setTheme(themeToggle.checked ? "dark" : "light"));
+}
+setTheme(safeLocalStorageGet("arena-theme", "light"));
 const leaderboardNav = document.querySelector("#leaderboard-nav");
 const settingsNav = document.querySelector("#settings-nav");
 const settingsPanel = document.querySelector("#settings-panel");
@@ -104,23 +131,34 @@ function showView(view) {
 leaderboardNav.addEventListener("click", () => showView("leaderboard"));
 settingsNav.addEventListener("click", () => showView("settings"));
 const abbreviateToggle = document.querySelector("#abbreviate-views");
-abbreviateToggle.checked = abbreviateViews;
-abbreviateToggle.addEventListener("change", () => {
-	abbreviateViews = abbreviateToggle.checked;
-	localStorage.setItem("abbreviate-views", abbreviateViews);
-	renderLeaderboard(APIs);
-});
+if (abbreviateToggle) {
+	abbreviateToggle.checked = abbreviateViews;
+	abbreviateToggle.addEventListener("change", () => {
+		abbreviateViews = abbreviateToggle.checked;
+		safeLocalStorageSet("abbreviate-views", String(abbreviateViews));
+		renderLeaderboard(APIs);
+	});
+}
 const bannerBlurToggle = document.querySelector("#banner-blur");
 if (bannerBlurToggle) {
 	bannerBlurToggle.checked = bannerBlurEnabled;
 	bannerBlurToggle.addEventListener("change", () => {
 		bannerBlurEnabled = bannerBlurToggle.checked;
-		localStorage.setItem("banner-blur", bannerBlurEnabled);
+		safeLocalStorageSet("banner-blur", String(bannerBlurEnabled));
 		applyBannerBlur();
 		if (activeProfileId && details.classList.contains("visible")) {
 			showDetails(activeProfileId);
 		}
 	});
 }
+const replaceCrownToggle = document.querySelector("#replace-crown");
+if (replaceCrownToggle) {
+	replaceCrownToggle.checked = replaceCrownEnabled;
+	replaceCrownToggle.addEventListener("change", () => {
+		replaceCrownEnabled = replaceCrownToggle.checked;
+		safeLocalStorageSet("replace-crown", String(replaceCrownEnabled));
+		renderLeaderboard(APIs);
+	});
+}
 loadApis();
-setInterval(loadApis, 20000);
+setInterval(loadApis, REFRESH_INTERVAL);
